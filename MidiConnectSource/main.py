@@ -5,7 +5,6 @@ import os
 
 from PyQt5.QtCore import QSize, QThread, QObject, pyqtSignal, Qt
 from PyQt5.QtWidgets import *
-from PyQt5 import QtCore
 from PyQt5 import QtGui
 import mido
 from mido import MidiFile
@@ -34,8 +33,10 @@ LengthString = None
 
 class Worker2(QObject):
     finished = pyqtSignal()
+    progress = pyqtSignal(float)
     def run(self):
-        #global playback_time
+        print("Thread 2 Start")
+        global playback_time
         global start_time
         global LengthString
         global ShouldStop
@@ -43,13 +44,9 @@ class Worker2(QObject):
         while ShouldStop is False:
             if SelectedMidiFile is not None and not ShouldPause and start_time is not None:
                 playback_time = time.time() - start_time - total_pause
-                m, s = divmod(playback_time, 60)
-                m = int(m)
-                s = int(s)
-                PositionString = "{:02d}:{:02d}".format(m, s)
-                FileDurationLabel.setText(PositionString + "/" + LengthString)
-                FileProgressBar.setValue(int((playback_time / SelectedMidiFile.length) * 1000))
+                #self.progress.emit(playback_time)
             time.sleep(0.2)
+        print("Thread 2 Finished")
         self.finished.emit()
 
 
@@ -58,6 +55,7 @@ class Worker(QObject):
     progress = pyqtSignal(int)
 
     def run(self):
+        print("Thread 1 Start")
         global start_time
         global total_pause
         global ShouldStop
@@ -97,19 +95,8 @@ class Worker(QObject):
             if not msg.is_meta:
                 ProcessMsg(msg)
             continue
-        time.sleep(0.6)
-        FilePlay.setEnabled(True)
-        FilePause.setEnabled(False)
-        FileStop.setEnabled(False)
-        PositionString = "00:00"
-        m, s = divmod(SelectedMidiFile.length, 60)
-        m = int(m)
-        s = int(s)
-        global LengthString
-        LengthString = "{:02d}:{:02d}".format(m, s)
-        FileDurationLabel.setText(PositionString + "/" + LengthString)
-        FileProgressBar.setValue(0)
-        FileSelectButton.setEnabled(True)
+
+        print("Thread 1 Finished")
         self.finished.emit()
 
 class Window(QMainWindow):
@@ -183,6 +170,24 @@ class Window(QMainWindow):
             self.thread.started.connect(self.worker.run)
             self.worker.finished.connect(self.thread.quit)
             self.worker.finished.connect(self.worker.deleteLater)
+
+            def ThreadFinished():
+                print("Thread Finished")
+                ShouldStop = True
+                FilePlay.setEnabled(True)
+                FilePause.setEnabled(False)
+                FileStop.setEnabled(False)
+                PositionString = "00:00"
+                m, s = divmod(SelectedMidiFile.length, 60)
+                m = int(m)
+                s = int(s)
+                global LengthString
+                LengthString = "{:02d}:{:02d}".format(m, s)
+                FileDurationLabel.setText(PositionString + "/" + LengthString)
+                FileProgressBar.setValue(0)
+                FileSelectButton.setEnabled(True)
+
+            self.worker.finished.connect(ThreadFinished)
             #self.thread.finished.connect(self.thread.deleteLater)
 
             self.thread.start()
@@ -191,6 +196,15 @@ class Window(QMainWindow):
             self.worker2 = Worker2()
             self.worker2.moveToThread(self.thread2)
             self.thread2.started.connect(self.worker2.run)
+            def UpdateProgress(Progress):
+                #print("Update Progress Triggered")
+                m, s = divmod(Progress, 60)
+                m = int(m)
+                s = int(s)
+                PositionString = "{:02d}:{:02d}".format(m, s)
+                FileDurationLabel.setText(PositionString + "/" + LengthString)
+                FileProgressBar.setValue(int((Progress / SelectedMidiFile.length) * 1000))
+            self.worker2.progress.connect(UpdateProgress)
             self.worker2.finished.connect(self.thread2.quit)
             self.worker2.finished.connect(self.worker2.deleteLater)
             #self.thread2.finished.connect(self.thread2.deleteLater)
@@ -327,14 +341,14 @@ def ProcessMsg(msg):
     if msg.type == "clock":
         pass
     elif msg.type == "note_on":
-        keyboard.type("n" + " " + str(msg.note) + " " + str(msg.velocity) + " #")
+        keyboard.type("n" + "|" + str(msg.note) + "|" + str(msg.velocity) + "|#")
         #print("n", msg.note, msg.velocity, "#")
         pass
     elif msg.type == "note_off":
-        keyboard.type("n" + " " + str(msg.note) + " " + "0" + " #")
+        keyboard.type("n" + "|" + str(msg.note) + "|" + "0" + "|#")
         #print("n", msg.note, msg.velocity, "#")
     elif msg.type == "control_change":
-        keyboard.type("c" + " " + str(msg.control) + " " + str(msg.value) + " #")
+        keyboard.type("c" + "|" + str(msg.control) + "|" + str(msg.value) + "|#")
         #print("c", msg.control, msg.value, "#")
         pass
     else:
