@@ -2,7 +2,7 @@
 MidiConnect
 </h1>
 <font size=4">
-By LordHenryVonHenry
+By LordHenryVonHenry <img src="https://cdn.discordapp.com/emojis/904830318509424702.gif" alt="HenryWave">
 </font>
 
 <div id="badges">
