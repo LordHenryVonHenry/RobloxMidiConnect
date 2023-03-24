@@ -270,6 +270,7 @@ class Window(QMainWindow):
             AvailableInputs = mido.get_input_names()
             if Selected in AvailableInputs:
                 print("Input Found, Connecting")
+                print("Connecting to "+Selected)
                 try:
                     with mido.open_input(Selected) as inport:
                         for msg in inport:
