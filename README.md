@@ -1,19 +1,19 @@
 <h1>
 MidiConnect
 </h1>
-<h2>
+<font size=4">
 By LordHenryVonHenry
-</h2>
+</font>
 
 <div id="badges">
   <a href="https://www.roblox.com/users/16129523/profile">
-    <img src="https://i.imgur.com/djS4d4s.png" width="25%" alt="Roblox Badge"/>
+    <img src="https://i.imgur.com/djS4d4s.png" width="10%" alt="Roblox Badge"/>
   </a>
   <a href="https://www.youtube.com/channel/UCGQW2KuCXI6Mn8OvqegtGfQ">
-    <img src="https://i.imgur.com/1d0rFXB.png" width="25%" alt="Youtube Badge"/>
+    <img src="https://i.imgur.com/1d0rFXB.png" width="10%" alt="Youtube Badge"/>
   </a>
     <a href="https://discord.com/invite/FcNp9KW">
-    <img src="https://i.imgur.com/zaiYuXt.png" width="25%" alt="Discord Badge"/>
+    <img src="https://i.imgur.com/zaiYuXt.png" width="10%" alt="Discord Badge"/>
   </a>
 </div>
 
@@ -28,3 +28,5 @@ Windows:<br>
 In the root folder there is a stand alone executable.
 <br><br>
 Don't trust me? I wouldn't either, if you are that way inclined the python source code is available in the MidiConnectSource folder, message me if you need help getting it to run.
+<br><br>
+<b>The source code is included so users may compile it themselves for personal use. This software is not open source.</b>
