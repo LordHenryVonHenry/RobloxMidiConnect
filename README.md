@@ -30,3 +30,4 @@ In the root folder there is a stand alone executable.
 Don't trust me? I wouldn't either, if you are that way inclined the python source code is available in the MidiConnectSource folder, message me if you need help getting it to run.
 <br><br>
 <b>The source code is included so users may compile it themselves for personal use. This software is not open source.</b>
+MidiConnect - ©2023 LordHenryVonHenry
