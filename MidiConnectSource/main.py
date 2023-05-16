@@ -9,10 +9,12 @@ from PyQt5 import QtGui
 import mido
 from mido import MidiFile
 import pynput
+import math
 import mido.backends.rtmidi
+import pydirectinput
 kb = pynput.keyboard
 keyboard = kb.Controller()
-
+ConnectThread = QThread()
 PlayThread = QThread()
 ProgressThread = QThread()
 app = None
@@ -30,6 +32,30 @@ start_time = None
 playback_time = 0
 total_pause = 0
 LengthString = None
+SelectedMidiPort = None
+
+class Keys:
+    NUM0 = 'num0'
+    NUM1 = 'numpad1'
+    NUM2 = 'numpad2'
+    NUM3 = 'numpad3'
+    NUM4 = 'numpad4'
+    NUM5 = 'numpad5'
+    NUM6 = 'numpad6'
+    NUM7 = 'numpad7'
+    NUM8 = 'numpad8'
+    NUM9 = 'numpad9'
+pydirectinput.PAUSE = 0
+pydirectinput.KEYBOARD_MAPPING[Keys.NUM0] = 0x52
+pydirectinput.KEYBOARD_MAPPING[Keys.NUM1] = 0x4F
+pydirectinput.KEYBOARD_MAPPING[Keys.NUM2] = 0x50
+pydirectinput.KEYBOARD_MAPPING[Keys.NUM3] = 0x51
+pydirectinput.KEYBOARD_MAPPING[Keys.NUM4] = 0x4B
+pydirectinput.KEYBOARD_MAPPING[Keys.NUM5] = 0x4C
+pydirectinput.KEYBOARD_MAPPING[Keys.NUM6] = 0x4D
+pydirectinput.KEYBOARD_MAPPING[Keys.NUM7] = 0x47
+pydirectinput.KEYBOARD_MAPPING[Keys.NUM8] = 0x48
+pydirectinput.KEYBOARD_MAPPING[Keys.NUM9] = 0x49
 
 class Worker2(QObject):
     finished = pyqtSignal()
@@ -95,6 +121,23 @@ class Worker(QObject):
             if not msg.is_meta:
                 ProcessMsg(msg)
             continue
+
+        print("Thread 1 Finished")
+        self.finished.emit()
+
+class Worker3(QObject):
+    finished = pyqtSignal()
+    progress = pyqtSignal(int)
+
+    def run(self):
+        print("Thread 3 Start")
+        global SelectedMidiPort
+        try:
+            with mido.open_input(SelectedMidiPort) as inport:
+                for msg in inport:
+                    ProcessMsg(msg)
+        except:
+            print("Error")
 
         print("Thread 1 Finished")
         self.finished.emit()
@@ -271,12 +314,22 @@ class Window(QMainWindow):
             if Selected in AvailableInputs:
                 print("Input Found, Connecting")
                 print("Connecting to "+Selected)
-                try:
-                    with mido.open_input(Selected) as inport:
-                        for msg in inport:
-                            ProcessMsg(msg)
-                except:
-                    print("Error")
+                global SelectedMidiPort
+                SelectedMidiPort = Selected
+                self.thread3 = ConnectThread
+                self.worker3 = Worker3()
+                self.worker3.moveToThread(self.thread3)
+                self.thread3.started.connect(self.worker3.run)
+                self.worker3.finished.connect(self.thread3.quit)
+                self.worker3.finished.connect(self.worker3.deleteLater)
+                self.thread3.start()
+                #
+                #try:
+                #    with mido.open_input(Selected) as inport:
+                #        for msg in inport:
+                #            ProcessMsg(msg)
+                #except:
+                #    print("Error")
             pass
 
         InputConnectButton.clicked.connect(ConnectInput)
@@ -338,7 +391,64 @@ def onDel():
 def for_canonical(f):
     return lambda k: f(listener.canonical(k))
 
+def SendKey(KeyCode):
+    #keyboard.press(kb.KeyCode.from_vk(KeyCode))
+    #keyboard.release(kb.KeyCode.from_vk(KeyCode))
+    pydirectinput.press(KeyCode)
+    #pydirectinput.keyDown(KeyCode)
+    #pydirectinput.keyUp(KeyCode)
+def get_digit(number, n):
+    return number // 10 ** n % 10
+
+
 def ProcessMsg(msg):
+
+    if msg.type == "clock":
+        pass
+    elif msg.type == "note_on":
+        Array = ['num0', 'numpad1', 'numpad2', 'numpad3', 'numpad4', 'numpad5', 'numpad6', 'numpad7', 'numpad8', 'numpad9', 'subtract', 'add']
+        print(str(msg.note) + " " + str(msg.velocity))
+        ToSend = [math.floor(msg.note/12),math.floor(msg.note%12),math.floor(msg.velocity/12),math.floor(msg.velocity%12)]
+
+        SendKey('multiply')
+        for x in ToSend:
+            SendKey(Array[x])
+        pass
+    elif msg.type == "note_off":
+        Array = ['num0', 'numpad1', 'numpad2', 'numpad3', 'numpad4', 'numpad5', 'numpad6', 'numpad7', 'numpad8',
+                'numpad9', 'subtract', 'add']
+        print(str(msg.note) + " " + str(msg.velocity))
+        ToSend = [math.floor(msg.note / 12), math.floor(msg.note % 12), 0,0]
+
+        SendKey('multiply')
+        for x in ToSend:
+            SendKey(Array[x])
+        pass
+    elif msg.type == "control_change":
+        control = None
+        if msg.control == 64:
+            control = 143
+        if control:
+            Array = ['num0', 'numpad1', 'numpad2', 'numpad3', 'numpad4', 'numpad5', 'numpad6', 'numpad7', 'numpad8',
+                     'numpad9', 'subtract', 'add']
+            ToSend = [math.floor(control / 12), math.floor(control % 12),math.floor(msg.value / 12), math.floor(msg.value % 12)]
+
+            SendKey('multiply')
+            for x in ToSend:
+                SendKey(Array[x])
+        #Array = [96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 109, 107]#110 111 cuz roblox keycodes differ
+        #ToSend = [math.floor(msg.control / 12), math.floor(msg.value % 12), 0, 0]
+        #keyboard.press(kb.KeyCode.from_vk(107))
+        #keyboard.release(kb.KeyCode.from_vk(107))
+        #for x in ToSend:
+        #    keyboard.press(kb.KeyCode.from_vk(Array[x]))
+        #    keyboard.release(kb.KeyCode.from_vk(Array[x]))
+        pass
+    else:
+        print(msg)
+
+
+def ProcessMsg2(msg):
     if msg.type == "clock":
         pass
     elif msg.type == "note_on":
