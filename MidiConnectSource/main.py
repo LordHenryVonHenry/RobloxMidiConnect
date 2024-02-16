@@ -419,7 +419,7 @@ def ProcessMsg(msg):
         SendKey('multiply')
         for x in ToSend:
             SendKey(Array[x])
-        pass
+        
     elif msg.type == "note_off":
         print(str(msg.note) + " " + str(msg.velocity))
 
@@ -431,7 +431,7 @@ def ProcessMsg(msg):
         SendKey('multiply')
         for x in ToSend:
             SendKey(Array[x])
-        pass
+
     elif msg.type == "control_change":
         control = None
         if msg.control == 64:
@@ -449,7 +449,7 @@ def ProcessMsg(msg):
         #for x in ToSend:
         #    keyboard.press(kb.KeyCode.from_vk(Array[x]))
         #    keyboard.release(kb.KeyCode.from_vk(Array[x]))
-        pass
+        
     else:
         print(msg)
 
