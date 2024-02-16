@@ -399,7 +399,7 @@ def SendKey(KeyCode):
     pydirectinput.press(KeyCode) # Internally calls keyDown and keyUp
     #pydirectinput.keyDown(KeyCode)
     #pydirectinput.keyUp(KeyCode)
-def get_digit(number, n):
+def get_digit(number, n): #Redundant code
     return number // 10 ** n % 10
 
 
