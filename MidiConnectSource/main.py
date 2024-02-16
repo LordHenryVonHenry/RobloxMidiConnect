@@ -394,7 +394,7 @@ def for_canonical(f):
 def SendKey(KeyCode):
     #keyboard.press(kb.KeyCode.from_vk(KeyCode))
     #keyboard.release(kb.KeyCode.from_vk(KeyCode))
-    pydirectinput.press(KeyCode)
+    pydirectinput.press(KeyCode) # Internally calls keyDown and keyUp
     #pydirectinput.keyDown(KeyCode)
     #pydirectinput.keyUp(KeyCode)
 def get_digit(number, n):
@@ -408,7 +408,11 @@ def ProcessMsg(msg):
     elif msg.type == "note_on":
         Array = ['num0', 'numpad1', 'numpad2', 'numpad3', 'numpad4', 'numpad5', 'numpad6', 'numpad7', 'numpad8', 'numpad9', 'subtract', 'add']
         print(str(msg.note) + " " + str(msg.velocity))
-        ToSend = [math.floor(msg.note/12),math.floor(msg.note%12),math.floor(msg.velocity/12),math.floor(msg.velocity%12)]
+        ToSend = [math.floor(msg.note/12),
+                  math.floor(msg.note%12),
+                  math.floor(msg.velocity/12),
+                  math.floor(msg.velocity%12)
+                  ]
 
         SendKey('multiply')
         for x in ToSend:
@@ -418,7 +422,10 @@ def ProcessMsg(msg):
         Array = ['num0', 'numpad1', 'numpad2', 'numpad3', 'numpad4', 'numpad5', 'numpad6', 'numpad7', 'numpad8',
                 'numpad9', 'subtract', 'add']
         print(str(msg.note) + " " + str(msg.velocity))
-        ToSend = [math.floor(msg.note / 12), math.floor(msg.note % 12), 0,0]
+        ToSend = [math.floor(msg.note / 12), 
+                  math.floor(msg.note % 12), 
+                  0,
+                  0]
 
         SendKey('multiply')
         for x in ToSend:
