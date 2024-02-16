@@ -57,6 +57,8 @@ pydirectinput.KEYBOARD_MAPPING[Keys.NUM7] = 0x47
 pydirectinput.KEYBOARD_MAPPING[Keys.NUM8] = 0x48
 pydirectinput.KEYBOARD_MAPPING[Keys.NUM9] = 0x49
 
+Array = ['num0', 'numpad1', 'numpad2', 'numpad3', 'numpad4', 'numpad5', 'numpad6', 'numpad7', 'numpad8', 'numpad9', 'subtract', 'add']
+
 class Worker2(QObject):
     finished = pyqtSignal()
     progress = pyqtSignal(float)
@@ -76,7 +78,7 @@ class Worker2(QObject):
         self.finished.emit()
 
 
-class Worker(QObject):
+class Worker(QObject): # Handles running Midi Files
     finished = pyqtSignal()
     progress = pyqtSignal(int)
 
@@ -125,7 +127,7 @@ class Worker(QObject):
         print("Thread 1 Finished")
         self.finished.emit()
 
-class Worker3(QObject):
+class Worker3(QObject): # Handles MIDI input from an input port
     finished = pyqtSignal()
     progress = pyqtSignal(int)
 
@@ -406,8 +408,8 @@ def ProcessMsg(msg):
     if msg.type == "clock":
         pass
     elif msg.type == "note_on":
-        Array = ['num0', 'numpad1', 'numpad2', 'numpad3', 'numpad4', 'numpad5', 'numpad6', 'numpad7', 'numpad8', 'numpad9', 'subtract', 'add']
         print(str(msg.note) + " " + str(msg.velocity))
+        
         ToSend = [math.floor(msg.note/12),
                   math.floor(msg.note%12),
                   math.floor(msg.velocity/12),
@@ -419,9 +421,8 @@ def ProcessMsg(msg):
             SendKey(Array[x])
         pass
     elif msg.type == "note_off":
-        Array = ['num0', 'numpad1', 'numpad2', 'numpad3', 'numpad4', 'numpad5', 'numpad6', 'numpad7', 'numpad8',
-                'numpad9', 'subtract', 'add']
         print(str(msg.note) + " " + str(msg.velocity))
+
         ToSend = [math.floor(msg.note / 12), 
                   math.floor(msg.note % 12), 
                   0,
@@ -436,8 +437,6 @@ def ProcessMsg(msg):
         if msg.control == 64:
             control = 143
         if control:
-            Array = ['num0', 'numpad1', 'numpad2', 'numpad3', 'numpad4', 'numpad5', 'numpad6', 'numpad7', 'numpad8',
-                     'numpad9', 'subtract', 'add']
             ToSend = [math.floor(control / 12), math.floor(control % 12),math.floor(msg.value / 12), math.floor(msg.value % 12)]
 
             SendKey('multiply')
@@ -455,7 +454,7 @@ def ProcessMsg(msg):
         print(msg)
 
 
-def ProcessMsg2(msg):
+def ProcessMsg2(msg): # Redundant function at its current state(uses keyboard so that's interesting)
     if msg.type == "clock":
         pass
     elif msg.type == "note_on":
