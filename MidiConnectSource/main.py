@@ -506,7 +506,7 @@ def ProcessMsg(msg):
             VelocityA1 = math.floor(msg.velocity/12) # Same logic as OctaveNo
             VelocityA2 = math.floor(msg.velocity%12) # Same logic as NoteNo
 
-        print(OctaveNo, NoteNo, VelocityA1, VelocityA2)
+
         EncodeAndSendMessage(OctaveNo, NoteNo, VelocityA1, VelocityA2)
 
     elif msg.type == "control_change":
