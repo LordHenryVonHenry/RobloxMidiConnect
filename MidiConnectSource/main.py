@@ -45,19 +45,19 @@ encoded_keys = ['numpad0', 'numpad1', 'numpad2', 'numpad3', 'numpad4', 'numpad5'
 vk_keycodes = {
     #https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes?redirectedfrom=MSDN
     "Windows": {
-        "numpad0": 0x52,
-        "numpad1": 0x4F,
-        "numpad2": 0x50,
-        "numpad3": 0x51,
-        "numpad4": 0x4B,
-        "numpad5": 0x4C,
-        "numpad6": 0x4D,
-        "numpad7": 0x47,
-        "numpad8": 0x48,
-        "numpad9": 0x49,
-        "subtract": 0x4A,
-        "add": 0x4E,
-        "multiply": 0x37,
+        "numpad0": 0x60,
+        "numpad1": 0x61,
+        "numpad2": 0x62,
+        "numpad3": 0x63,
+        "numpad4": 0x64,
+        "numpad5": 0x65,
+        "numpad6": 0x66,
+        "numpad7": 0x67,
+        "numpad8": 0x68,
+        "numpad9": 0x69,
+        "subtract": 0x6D,
+        "add": 0x6B,
+        "multiply": 0x6A,
     },
 
     #Retrieved from a debian based distro running on an X server
