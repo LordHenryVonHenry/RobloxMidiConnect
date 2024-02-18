@@ -1,0 +1,4 @@
+PyQt5
+python-rtmidi
+mido
+pynput
