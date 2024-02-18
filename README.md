@@ -24,20 +24,21 @@ This software converts midi signals into commands that can be understood by the 
 <h3>
 Installation
 </h3>
-Windows:<br>
+[Windows]<br>
 In the root folder there is a standalone executable called MidiConnect.exe
-
-Linux
-In the root folder there is a standalone executable called MidiConnectLinux
-Give it execution permissions then run it
+<br><br>
+[Linux]<br>
+In the root folder there is a standalone executable called MidiConnectLinux<br>
+Give it execution permissions then run it.
 
 ```bash
 chmod +x MidiConnectLinux
  ./MidiConnectLinux
 ```
 
-macOS
-You have to run the file from source.
+<br>
+[macOS]<br>
+You have to run the file from source.<br>
 Download this project as a zip and then use python to run ``MidiConnectSource/main.py``
 
 <h3>
@@ -55,4 +56,6 @@ pip install -r requirements.txt
 <br><br>
 <b>The source code is included so users may compile it themselves for personal use. This software is not open source.</b>
 MidiConnect - ©2023 LordHenryVonHenry
+
+
 
