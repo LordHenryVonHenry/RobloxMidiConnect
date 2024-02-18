@@ -564,12 +564,17 @@ def main():
     app.exec_()
     #sys.exit(app.exec_())
 
+def onpress(key):
+    if key==kb.Key.delete:
+        onDel()
+
 if __name__ == '__main__':
-    hotkey = kb.HotKey(
-        kb.HotKey.parse('<delete>'),
-        onDel)
+    #hotkey = kb.HotKey(kb.HotKey.parse('<delete>'), onDel)
+
     listener = kb.Listener(
-        on_press=for_canonical(hotkey.press),
-        on_release=for_canonical(hotkey.release))
+                            # on_press=for_canonical(hotkey.press), 
+                            on_press=onpress, 
+                            #on_release=for_canonical(hotkey.release)
+                           )
     listener.start()
     main()
