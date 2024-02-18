@@ -20,13 +20,26 @@ By LordHenryVonHenry <img src="https://cdn.discordapp.com/emojis/904830318509424
 <h3>
 What is it?
 </h3>
-This software converts midi signals into commands that can be understood by the Piano Rooms Roblox game, these commands are simply raw text of the type of command, the channel, and the velocity.
+This software converts midi signals into commands that can be understood by the Piano Rooms Roblox game, these commands are simply raw text of the type of command, the channel, and the velocity encoded as numpad keys.
 <h3>
 Installation
 </h3>
 Windows:<br>
-In the root folder there is a stand alone executable.
-<br><br>
+In the root folder there is a standalone executable called MidiConnect.exe
+
+Linux
+In the root folder there is a standalone executable called MidiConnectLinux
+Give it execution permissions then run it
+
+```bash
+chmod +x MidiConnectLinux
+ ./MidiConnectLinux
+```
+
+macOS
+You have to run the file from source.
+Download this project as a zip and then use python to run ``MidiConnectSource/main.py``
+
 <h3>
 Compiling from source
 </h3>
@@ -38,6 +51,8 @@ following in the MidiConnectSource directory
 ```bash
 pip install -r requirements.txt
 ```
+
 <br><br>
 <b>The source code is included so users may compile it themselves for personal use. This software is not open source.</b>
 MidiConnect - ©2023 LordHenryVonHenry
+
