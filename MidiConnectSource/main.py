@@ -479,7 +479,7 @@ def ProcessMsg(msg):
         return
     elif msg.type == "note_on" or msg.type == "note_off":
 
-        # We are diving by 12 because we will be encoding it with 12 keys only(The keys are "0123456789-+")
+        # We are dividing by 12 because we will be encoding it with 12 keys only(The keys are "0123456789-+")
         # Additionally, it adds up nicely because there are 12 semitones in one octave
         
         # C0 aka Note C at Octave 0
