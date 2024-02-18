@@ -80,11 +80,23 @@ vk_keycodes = {
         "multiply": 0xffaa,
     },
 
-    #https://github.com/phracker/MacOSX-SDKs/blob/master/MacOSX11.3.sdk/System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HIToolbox.framework/Versions/A/Headers/Events.h
-    #https://stackoverflow.com/questions/3202629/where-can-i-find-a-list-of-mac-virtual-key-codes/16125341#16125341
+    # https://github.com/phracker/MacOSX-SDKs/blob/master/MacOSX11.3.sdk/System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HIToolbox.framework/Versions/A/Headers/Events.h
+    # https://stackoverflow.com/questions/3202629/where-can-i-find-a-list-of-mac-virtual-key-codes/16125341#16125341
     #Aka macOS
     "Darwin": {
-
+        "numpad0": 0x52,
+        "numpad1": 0x53,
+        "numpad2": 0x54,
+        "numpad3": 0x55,
+        "numpad4": 0x56,
+        "numpad5": 0x57,
+        "numpad6": 0x58,
+        "numpad7": 0x59,
+        "numpad8": 0x5B,
+        "numpad9": 0x5C,
+        "subtract": 0x4E,
+        "add": 0x45,
+        "multiply": 0x43,
     }
 }
 
