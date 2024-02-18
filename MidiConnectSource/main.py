@@ -82,7 +82,7 @@ vk_keycodes = {
 
     # https://github.com/phracker/MacOSX-SDKs/blob/master/MacOSX11.3.sdk/System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HIToolbox.framework/Versions/A/Headers/Events.h
     # https://stackoverflow.com/questions/3202629/where-can-i-find-a-list-of-mac-virtual-key-codes/16125341#16125341
-    #Aka macOS
+    #Aka macOS(Do not change as this is the value expected and returned platform.system())
     "Darwin": {
         "numpad0": 0x52,
         "numpad1": 0x53,
