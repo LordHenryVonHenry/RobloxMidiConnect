@@ -8,12 +8,13 @@ from PyQt5.QtWidgets import *
 from PyQt5 import QtGui
 import mido
 from mido import MidiFile
-import pynput
 import math
 import mido.backends.rtmidi
-import pydirectinput
+# import pydirectinput
+import platform
+import pynput
 kb = pynput.keyboard
-keyboard = kb.Controller()
+keyboard=kb.Controller()
 ConnectThread = QThread()
 PlayThread = QThread()
 ProgressThread = QThread()
@@ -34,28 +35,95 @@ total_pause = 0
 LengthString = None
 SelectedMidiPort = None
 
-class Keys:
-    NUM0 = 'num0'
-    NUM1 = 'numpad1'
-    NUM2 = 'numpad2'
-    NUM3 = 'numpad3'
-    NUM4 = 'numpad4'
-    NUM5 = 'numpad5'
-    NUM6 = 'numpad6'
-    NUM7 = 'numpad7'
-    NUM8 = 'numpad8'
-    NUM9 = 'numpad9'
-pydirectinput.PAUSE = 0
-pydirectinput.KEYBOARD_MAPPING[Keys.NUM0] = 0x52
-pydirectinput.KEYBOARD_MAPPING[Keys.NUM1] = 0x4F
-pydirectinput.KEYBOARD_MAPPING[Keys.NUM2] = 0x50
-pydirectinput.KEYBOARD_MAPPING[Keys.NUM3] = 0x51
-pydirectinput.KEYBOARD_MAPPING[Keys.NUM4] = 0x4B
-pydirectinput.KEYBOARD_MAPPING[Keys.NUM5] = 0x4C
-pydirectinput.KEYBOARD_MAPPING[Keys.NUM6] = 0x4D
-pydirectinput.KEYBOARD_MAPPING[Keys.NUM7] = 0x47
-pydirectinput.KEYBOARD_MAPPING[Keys.NUM8] = 0x48
-pydirectinput.KEYBOARD_MAPPING[Keys.NUM9] = 0x49
+# Will be used to later on determine which dict to use in vk_keycodes
+CurrentPlatform = platform.system()
+
+# To be used when encoding octave, note, velocity, control 
+encoded_keys = ['numpad0', 'numpad1', 'numpad2', 'numpad3', 'numpad4', 'numpad5', 'numpad6', 'numpad7', 'numpad8', 'numpad9', 'subtract', 'add']
+
+# Maps the virtual keycodes for each OS
+vk_keycodes = {
+    #https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes?redirectedfrom=MSDN
+    "Windows": {
+        "numpad0": 0x60,
+        "numpad1": 0x61,
+        "numpad2": 0x62,
+        "numpad3": 0x63,
+        "numpad4": 0x64,
+        "numpad5": 0x65,
+        "numpad6": 0x66,
+        "numpad7": 0x67,
+        "numpad8": 0x68,
+        "numpad9": 0x69,
+        "subtract": 0x6D,
+        "add": 0x6B,
+        "multiply": 0x6A,
+    },
+
+    #Retrieved from a debian based distro running on an X server
+    #xmodmap -pke
+    #xev
+    #https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h
+    "Linux": {
+        "numpad0": 0xffb0,
+        "numpad1": 0xffb1,
+        "numpad2": 0xffb2,
+        "numpad3": 0xffb3,
+        "numpad4": 0xffb4,
+        "numpad5": 0xffb5,
+        "numpad6": 0xffb6,
+        "numpad7": 0xffb7,
+        "numpad8": 0xffb8,
+        "numpad9": 0xffb9,
+        "subtract": 0xffad,
+        "add": 0xffab,
+        "multiply": 0xffaa,
+    },
+
+    # https://github.com/phracker/MacOSX-SDKs/blob/master/MacOSX11.3.sdk/System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HIToolbox.framework/Versions/A/Headers/Events.h
+    # https://stackoverflow.com/questions/3202629/where-can-i-find-a-list-of-mac-virtual-key-codes/16125341#16125341
+    #Aka macOS(Do not change as this is the value expected and returned platform.system())
+    "Darwin": {
+        "numpad0": 0x52,
+        "numpad1": 0x53,
+        "numpad2": 0x54,
+        "numpad3": 0x55,
+        "numpad4": 0x56,
+        "numpad5": 0x57,
+        "numpad6": 0x58,
+        "numpad7": 0x59,
+        "numpad8": 0x5B,
+        "numpad9": 0x5C,
+        "subtract": 0x4E,
+        "add": 0x45,
+        "multiply": 0x43,
+    }
+}
+
+
+# class Keys:
+#     NUM0 = 'numpad0'
+#     NUM1 = 'numpad1'
+#     NUM2 = 'numpad2'
+#     NUM3 = 'numpad3'
+#     NUM4 = 'numpad4'
+#     NUM5 = 'numpad5'
+#     NUM6 = 'numpad6'
+#     NUM7 = 'numpad7'
+#     NUM8 = 'numpad8'
+#     NUM9 = 'numpad9'
+# pydirectinput.PAUSE = 0
+# pydirectinput.KEYBOARD_MAPPING[Keys.NUM0] = 0x52
+# pydirectinput.KEYBOARD_MAPPING[Keys.NUM1] = 0x4F
+# pydirectinput.KEYBOARD_MAPPING[Keys.NUM2] = 0x50
+# pydirectinput.KEYBOARD_MAPPING[Keys.NUM3] = 0x51
+# pydirectinput.KEYBOARD_MAPPING[Keys.NUM4] = 0x4B
+# pydirectinput.KEYBOARD_MAPPING[Keys.NUM5] = 0x4C
+# pydirectinput.KEYBOARD_MAPPING[Keys.NUM6] = 0x4D
+# pydirectinput.KEYBOARD_MAPPING[Keys.NUM7] = 0x47
+# pydirectinput.KEYBOARD_MAPPING[Keys.NUM8] = 0x48
+# pydirectinput.KEYBOARD_MAPPING[Keys.NUM9] = 0x49
+
 
 class Worker2(QObject):
     finished = pyqtSignal()
@@ -76,7 +144,7 @@ class Worker2(QObject):
         self.finished.emit()
 
 
-class Worker(QObject):
+class Worker(QObject): # Handles running Midi Files
     finished = pyqtSignal()
     progress = pyqtSignal(int)
 
@@ -125,7 +193,7 @@ class Worker(QObject):
         print("Thread 1 Finished")
         self.finished.emit()
 
-class Worker3(QObject):
+class Worker3(QObject): # Handles MIDI input from an input port
     finished = pyqtSignal()
     progress = pyqtSignal(int)
 
@@ -391,64 +459,89 @@ def onDel():
 def for_canonical(f):
     return lambda k: f(listener.canonical(k))
 
-def SendKey(KeyCode):
-    #keyboard.press(kb.KeyCode.from_vk(KeyCode))
-    #keyboard.release(kb.KeyCode.from_vk(KeyCode))
-    pydirectinput.press(KeyCode)
-    #pydirectinput.keyDown(KeyCode)
-    #pydirectinput.keyUp(KeyCode)
-def get_digit(number, n):
+def SendKey(NumpadKeyName): #numpad0-9, -, +
+    #keyboard.press(kb.KeyCode.from_vk(NumpadKeyName))
+    #keyboard.release(kb.KeyCode.from_vk(NumpadKeyName))
+    # Simply gets the hex vk keycode for the respective OS then sends it over to pynput
+    keyboard.tap(kb.KeyCode.from_vk(vk_keycodes[CurrentPlatform][NumpadKeyName]))
+    # pydirectinput.press(NumpadKeyName) # Internally calls keyDown and keyUp
+    #pydirectinput.keyDown(NumpadKeyName)
+    #pydirectinput.keyUp(NumpadKeyName)
+def get_digit(number, n): #Redundant code
     return number // 10 ** n % 10
 
+def EncodeAndSendMessage(a, b, c, d):
+    """
+        a: OctaveNo_PlusOne[floor(note / 12)] OR Control A[floor(control / 12)]
+        b: NoteNo[floor(note % 12)] OR Control B[floor(control % 12)]
+        c: VelocityA[floor(velocity / 12)] OR Control Value A[floor(msg.value / 12)]
+        d: VelocityB[floor(velocity % 12)] OR Control Value B[floor(msg.value % 12)]
+    """
+    # Signifies the beginning of a midi message
+    SendKey("multiply")
+    print(a,b,c,d)
+    SendKey(encoded_keys[a])
+    SendKey(encoded_keys[b])
+    
+    SendKey(encoded_keys[c])
+    SendKey(encoded_keys[d])
 
 def ProcessMsg(msg):
-
     if msg.type == "clock":
-        pass
-    elif msg.type == "note_on":
-        Array = ['num0', 'numpad1', 'numpad2', 'numpad3', 'numpad4', 'numpad5', 'numpad6', 'numpad7', 'numpad8', 'numpad9', 'subtract', 'add']
-        print(str(msg.note) + " " + str(msg.velocity))
-        ToSend = [math.floor(msg.note/12),math.floor(msg.note%12),math.floor(msg.velocity/12),math.floor(msg.velocity%12)]
+        return
+    elif msg.type == "note_on" or msg.type == "note_off":
 
-        SendKey('multiply')
-        for x in ToSend:
-            SendKey(Array[x])
-        pass
-    elif msg.type == "note_off":
-        Array = ['num0', 'numpad1', 'numpad2', 'numpad3', 'numpad4', 'numpad5', 'numpad6', 'numpad7', 'numpad8',
-                'numpad9', 'subtract', 'add']
-        print(str(msg.note) + " " + str(msg.velocity))
-        ToSend = [math.floor(msg.note / 12), math.floor(msg.note % 12), 0,0]
+        # We are dividing by 12 because we will be encoding it with 12 keys only(The keys are "0123456789-+")
+        # Additionally, it adds up nicely because there are 12 semitones in one octave
+        
+        # C0 aka Note C at Octave 0
+        # Note number: 12
+        # O = msg.note / 12 = 12 / 12 = 1
+        # Octave = 1 - O = 1 - 1 = 0
+        
+        # C4 aka Note C at Octave 4
+        # Note number: 60
+        # O = msg.note / 12 = 60 /12 = 5
+        # Octave = 1 - O = 5 - 1 = 4
 
-        SendKey('multiply')
-        for x in ToSend:
-            SendKey(Array[x])
-        pass
+        # To decode
+        # (DIV_VAL * 12) + MODULOS_VAL
+
+        OctaveNo = math.floor(msg.note/12) # Gives us the octave number(begins from the 0th octave at 1)
+        NoteNo = math.floor(msg.note%12) # Gives us the note number relative to the current octave(begins from the note C at 0)
+
+        if msg.type == "note_off":
+            VelocityA1 = 0
+            VelocityA2 = 0 
+        else:
+            #Velocity has a range from 0 to 127
+            VelocityA1 = math.floor(msg.velocity/12) # Same logic as OctaveNo
+            VelocityA2 = math.floor(msg.velocity%12) # Same logic as NoteNo
+
+
+        EncodeAndSendMessage(OctaveNo, NoteNo, VelocityA1, VelocityA2)
+
     elif msg.type == "control_change":
+        # Uses the same logic as the previous if statement to encode a control change
         control = None
         if msg.control == 64:
             control = 143
         if control:
-            Array = ['num0', 'numpad1', 'numpad2', 'numpad3', 'numpad4', 'numpad5', 'numpad6', 'numpad7', 'numpad8',
-                     'numpad9', 'subtract', 'add']
-            ToSend = [math.floor(control / 12), math.floor(control % 12),math.floor(msg.value / 12), math.floor(msg.value % 12)]
-
-            SendKey('multiply')
-            for x in ToSend:
-                SendKey(Array[x])
-        #Array = [96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 109, 107]#110 111 cuz roblox keycodes differ
+            a, b, c, d = math.floor(control / 12), math.floor(control % 12), math.floor(msg.value / 12), math.floor(msg.value % 12)
+            EncodeAndSendMessage(a, b, c, d)
+        #encoded_keys = [96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 109, 107]#110 111 cuz roblox keycodes differ
         #ToSend = [math.floor(msg.control / 12), math.floor(msg.value % 12), 0, 0]
         #keyboard.press(kb.KeyCode.from_vk(107))
         #keyboard.release(kb.KeyCode.from_vk(107))
         #for x in ToSend:
-        #    keyboard.press(kb.KeyCode.from_vk(Array[x]))
-        #    keyboard.release(kb.KeyCode.from_vk(Array[x]))
-        pass
-    else:
-        print(msg)
+        #    keyboard.press(kb.KeyCode.from_vk(encoded_keys[x]))
+        #    keyboard.release(kb.KeyCode.from_vk(encoded_keys[x]))
+    
+
+    print(f"msg: {msg}")
 
 
-def ProcessMsg2(msg):
+def ProcessMsg2(msg): # Redundant function at its current state(uses keyboard so that's interesting)
     if msg.type == "clock":
         pass
     elif msg.type == "note_on":
@@ -471,13 +564,17 @@ def main():
     app.exec_()
     #sys.exit(app.exec_())
 
+def onpress(key):
+    if key==kb.Key.delete:
+        onDel()
+
 if __name__ == '__main__':
-    hotkey = kb.HotKey(
-        kb.HotKey.parse('<delete>'),
-        onDel)
+    #hotkey = kb.HotKey(kb.HotKey.parse('<delete>'), onDel)
+
     listener = kb.Listener(
-        on_press=for_canonical(hotkey.press),
-        on_release=for_canonical(hotkey.release))
+                            # on_press=for_canonical(hotkey.press), 
+                            on_press=onpress, 
+                            #on_release=for_canonical(hotkey.release)
+                           )
     listener.start()
     main()
-    pass
